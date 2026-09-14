@@ -207,11 +207,7 @@
   </div>
 
   <script>
-    let transactions = JSON.parse(localStorage.getItem('dompetku_data')) || [
-      { id: 1, type: 'in', category: 'tabungan', desc: 'Setor Alokasi Tabungan', amount: 100000, date: '2026-09-14' },
-      { id: 2, type: 'out', category: 'belanja', desc: 'Belanja Sayur Dapur', amount: 35000, date: '2026-09-14' },
-      { id: 3, type: 'out', category: 'saham', desc: 'Beli Saham BBCA', amount: 20000, date: '2026-09-14' }
-    ];
+    let transactions = JSON.parse(localStorage.getItem('dompetku_data')) || [];
 
     let myChart = null;
     lucide.createIcons();
@@ -400,12 +396,12 @@
     }
 
     function clearAllData() {
-      if (confirm('Hapus seluruh catatan?')) {
-        transactions = [];
-        localStorage.removeItem('dompetku_data');
-        renderUI();
-      }
-    }
+  if (confirm('Hapus seluruh catatan?')) {
+    transactions = [];
+    localStorage.setItem('dompetku_data', JSON.stringify([])); // Simpan array kosong
+    renderUI();
+  }
+}
 
     renderUI();
   </script>
