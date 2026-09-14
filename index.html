@@ -61,40 +61,40 @@
       </div>
     </div>
 
-    <!-- Ringkasan Alokasi Pos Utama (Klik untuk melihat Pop-Up Rincian In/Out Pos) -->
+    <!-- Ringkasan Alokasi Pos Utama (Klik untuk memfilter daftar transaksi) -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
       <!-- Card Belanja -->
-      <div onclick="openDetailModal('belanja')" class="glass-card-dark p-5 rounded-2xl border-l-4 border-l-blue-400 shadow-lg cursor-pointer hover:bg-slate-800/80 transition transform hover:-translate-y-1">
+      <div onclick="setFilter('belanja')" class="glass-card-dark p-5 rounded-2xl border-l-4 border-l-blue-400 shadow-lg cursor-pointer hover:bg-slate-800/80 transition transform hover:-translate-y-1">
         <div class="flex justify-between items-center text-slate-400 mb-1">
           <span class="text-xs font-semibold uppercase tracking-wider">Belanja & Dapur</span>
           <i data-lucide="shopping-bag" class="w-4 h-4 text-blue-400"></i>
         </div>
         <h3 id="totalBelanja" class="text-2xl font-bold text-blue-200">Rp 0</h3>
-        <p class="text-[11px] text-amber-300 mt-2 font-medium flex items-center gap-1">Lihat Rincian In/Out ➔</p>
+        <p class="text-[11px] text-amber-300 mt-2 font-medium flex items-center gap-1">Tampilkan Rincian Pos ➔</p>
       </div>
 
       <!-- Card Tabungan -->
-      <div onclick="openDetailModal('tabungan')" class="glass-card-dark p-5 rounded-2xl border-l-4 border-l-emerald-400 shadow-lg cursor-pointer hover:bg-slate-800/80 transition transform hover:-translate-y-1">
+      <div onclick="setFilter('tabungan')" class="glass-card-dark p-5 rounded-2xl border-l-4 border-l-emerald-400 shadow-lg cursor-pointer hover:bg-slate-800/80 transition transform hover:-translate-y-1">
         <div class="flex justify-between items-center text-slate-400 mb-1">
           <span class="text-xs font-semibold uppercase tracking-wider">Tabungan</span>
           <i data-lucide="piggy-bank" class="w-4 h-4 text-emerald-400"></i>
         </div>
         <h3 id="totalTabungan" class="text-2xl font-bold text-emerald-200">Rp 0</h3>
-        <p class="text-[11px] text-amber-300 mt-2 font-medium flex items-center gap-1">Lihat Rincian In/Out ➔</p>
+        <p class="text-[11px] text-amber-300 mt-2 font-medium flex items-center gap-1">Tampilkan Rincian Pos ➔</p>
       </div>
 
       <!-- Card Saham -->
-      <div onclick="openDetailModal('saham')" class="glass-card-dark p-5 rounded-2xl border-l-4 border-l-amber-400 shadow-lg cursor-pointer hover:bg-slate-800/80 transition transform hover:-translate-y-1">
+      <div onclick="setFilter('saham')" class="glass-card-dark p-5 rounded-2xl border-l-4 border-l-amber-400 shadow-lg cursor-pointer hover:bg-slate-800/80 transition transform hover:-translate-y-1">
         <div class="flex justify-between items-center text-slate-400 mb-1">
           <span class="text-xs font-semibold uppercase tracking-wider">Investasi</span>
           <i data-lucide="trending-up" class="w-4 h-4 text-amber-400"></i>
         </div>
         <h3 id="totalSaham" class="text-2xl font-bold text-amber-200">Rp 0</h3>
-        <p class="text-[11px] text-amber-300 mt-2 font-medium flex items-center gap-1">Lihat Rincian In/Out ➔</p>
+        <p class="text-[11px] text-amber-300 mt-2 font-medium flex items-center gap-1">Tampilkan Rincian Pos ➔</p>
       </div>
     </div>
 
-    <!-- Layout Visual & Riwayat Keseluruhan -->
+    <!-- Layout Visual & Riwayat Transaksi -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
       <div class="glass-card-dark p-5 rounded-2xl md:col-span-1 flex flex-col justify-center items-center">
         <h4 class="text-sm font-semibold text-slate-300 mb-4 self-start flex items-center gap-2">
@@ -106,10 +106,15 @@
       </div>
 
       <div class="glass-card-dark p-5 rounded-2xl md:col-span-2">
-        <div class="flex justify-between items-center mb-4">
-          <h4 class="text-sm font-semibold text-slate-300 flex items-center gap-2">
-            <i data-lucide="list" class="w-4 h-4 text-pink-400"></i> Semua Transaksi Terakhir
-          </h4>
+        <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
+          <div class="flex items-center gap-2">
+            <h4 id="listHeaderTitle" class="text-sm font-semibold text-slate-300 flex items-center gap-2">
+              <i data-lucide="list" class="w-4 h-4 text-pink-400"></i> Semua Transaksi Terakhir
+            </h4>
+            <button id="resetFilterBtn" onclick="setFilter('all')" class="hidden text-[11px] bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 border border-amber-500/40 px-2.5 py-0.5 rounded-full transition flex items-center gap-1">
+              <span>Semua</span> &times;
+            </button>
+          </div>
           <button onclick="clearAllData()" class="text-xs text-rose-400 hover:text-rose-300 transition">Hapus Semua</button>
         </div>
         <div class="space-y-3 max-h-[280px] overflow-y-auto pr-1" id="transactionList">
@@ -119,43 +124,7 @@
     </div>
   </div>
 
-  <!-- MODAL POP-UP 1: Rincian In/Out Spesifik Pos Keuangan -->
-  <div id="detailModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden justify-center items-center p-4 z-50">
-    <div class="glass-card-dark w-full max-w-lg p-6 rounded-3xl border border-amber-500/20 shadow-2xl relative">
-      <div class="flex justify-between items-center mb-4 pb-3 border-b border-white/10">
-        <div>
-          <h3 id="detailModalTitle" class="text-lg font-bold bg-gradient-to-r from-amber-200 to-pink-300 bg-clip-text text-transparent">
-            Rincian Pos Keuangan
-          </h3>
-          <p class="text-xs text-slate-400">Daftar Pemasukan (In) dan Pengeluaran (Out)</p>
-        </div>
-        <button onclick="closeDetailModal()" class="w-8 h-8 rounded-full bg-slate-800/80 text-slate-400 hover:text-amber-300 flex items-center justify-center transition">&times;</button>
-      </div>
-
-      <!-- Total In & Out Ringkasan Pos -->
-      <div class="grid grid-cols-2 gap-3 mb-4">
-        <div class="bg-emerald-500/10 border border-emerald-500/20 p-3 rounded-xl text-center">
-          <span class="text-[11px] text-slate-400 block">Total In</span>
-          <span id="detailPosIn" class="text-base font-bold text-emerald-400">Rp 0</span>
-        </div>
-        <div class="bg-rose-500/10 border border-rose-500/20 p-3 rounded-xl text-center">
-          <span class="text-[11px] text-slate-400 block">Total Out</span>
-          <span id="detailPosOut" class="text-base font-bold text-rose-400">Rp 0</span>
-        </div>
-      </div>
-
-      <!-- List Khusus Pos Ini -->
-      <div class="space-y-2.5 max-h-[260px] overflow-y-auto pr-1" id="detailModalList">
-        <!-- Rincian list dimasukkan lewat Javascript -->
-      </div>
-
-      <div class="mt-5 pt-3 border-t border-white/10 flex justify-end">
-        <button onclick="closeDetailModal()" class="px-5 py-2 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 text-xs font-semibold transition">Tutup</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL POP-UP 2: Input Transaksi Baru -->
+  <!-- MODAL POP-UP: Input Transaksi Baru -->
   <div id="transactionModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden justify-center items-center p-4 z-50">
     <div class="glass-card-dark w-full max-w-md p-6 rounded-3xl border border-amber-500/20 shadow-2xl relative">
       <div class="flex justify-between items-center mb-5 pb-3 border-b border-white/10">
@@ -208,8 +177,9 @@
 
   <script>
     let transactions = JSON.parse(localStorage.getItem('dompetku_data')) || [];
-
+    let currentFilter = 'all'; // Status filter aktif
     let myChart = null;
+
     lucide.createIcons();
     document.getElementById('txDate').valueAsDate = new Date();
 
@@ -217,29 +187,55 @@
       return 'Rp ' + Number(num).toLocaleString('id-ID');
     }
 
+    function setFilter(category) {
+      currentFilter = category;
+      renderUI();
+    }
+
     function renderUI() {
       const listEl = document.getElementById('transactionList');
+      const resetBtn = document.getElementById('resetFilterBtn');
+      const headerTitle = document.getElementById('listHeaderTitle');
       listEl.innerHTML = '';
 
       let totalBelanja = 0, totalTabungan = 0, totalSaham = 0;
       let totalIn = 0, totalOut = 0;
 
-      if (transactions.length === 0) {
-        listEl.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">Belum ada catatan transaksi.</p>';
+      // Hitung akumulasi angka banner
+      transactions.forEach(tx => {
+        const isIncome = tx.type === 'in';
+        const amt = Number(tx.amount);
+
+        if (isIncome) totalIn += amt;
+        else totalOut += amt;
+
+        if (tx.category === 'belanja') totalBelanja += isIncome ? amt : -amt;
+        if (tx.category === 'tabungan') totalTabungan += isIncome ? amt : -amt;
+        if (tx.category === 'saham') totalSaham += isIncome ? amt : -amt;
+      });
+
+      // Filter daftar transaksi berdasarkan kartu yang diklik
+      const filteredTransactions = currentFilter === 'all' 
+        ? transactions 
+        : transactions.filter(t => t.category === currentFilter);
+
+      // Pembaruan Judul & Tombol Reset
+      if (currentFilter === 'all') {
+        resetBtn.classList.add('hidden');
+        headerTitle.innerHTML = `<i data-lucide="list" class="w-4 h-4 text-pink-400"></i> Semua Transaksi Terakhir`;
       } else {
-        transactions.forEach(tx => {
+        resetBtn.classList.remove('hidden');
+        let catText = currentFilter === 'belanja' ? 'Belanja & Dapur' : (currentFilter === 'tabungan' ? 'Tabungan' : 'Investasi');
+        headerTitle.innerHTML = `<i data-lucide="filter" class="w-4 h-4 text-amber-400"></i> Rincian Pos: ${catText}`;
+      }
+      lucide.createIcons();
+
+      // Render daftar item
+      if (filteredTransactions.length === 0) {
+        listEl.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">Belum ada catatan ${currentFilter === 'all' ? 'transaksi' : 'di pos ini'}.</p>`;
+      } else {
+        filteredTransactions.forEach(tx => {
           const isIncome = tx.type === 'in';
-          const amt = Number(tx.amount);
-
-          if (isIncome) {
-            totalIn += amt;
-          } else {
-            totalOut += amt;
-          }
-
-          if (tx.category === 'belanja') totalBelanja += isIncome ? amt : -amt;
-          if (tx.category === 'tabungan') totalTabungan += isIncome ? amt : -amt;
-          if (tx.category === 'saham') totalSaham += isIncome ? amt : -amt;
 
           let typeBadge = isIncome 
             ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30">IN</span>' 
@@ -272,6 +268,7 @@
         });
       }
 
+      // Update Angka Banner
       document.getElementById('totalSaldo').innerText = formatRupiah(totalIn - totalOut);
       document.getElementById('totalIn').innerText = formatRupiah(totalIn);
       document.getElementById('totalOut').innerText = formatRupiah(totalOut);
@@ -281,64 +278,6 @@
       document.getElementById('totalSaham').innerText = formatRupiah(totalSaham);
 
       updateChart(Math.max(0, totalBelanja), Math.max(0, totalTabungan), Math.max(0, totalSaham));
-    }
-
-    // Fungsi Membuka Pop-Up Rincian Spesifik Pos Keuangan
-    function openDetailModal(category) {
-      const modal = document.getElementById('detailModal');
-      const listContainer = document.getElementById('detailModalList');
-      const title = document.getElementById('detailModalTitle');
-
-      let catTitle = category === 'belanja' ? '🛒 Belanja & Dapur' : (category === 'tabungan' ? '🐖 Tabungan & Darurat' : '📈 Investasi');
-      title.innerText = `Rincian Pos: ${catTitle}`;
-
-      const posTx = transactions.filter(t => t.category === category);
-      listContainer.innerHTML = '';
-
-      let posIn = 0;
-      let posOut = 0;
-
-      if (posTx.length === 0) {
-        listContainer.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">Belum ada transaksi di pos ini.</p>';
-      } else {
-        posTx.forEach(tx => {
-          const isIncome = tx.type === 'in';
-          const amt = Number(tx.amount);
-          
-          if (isIncome) posIn += amt;
-          else posOut += amt;
-
-          const item = document.createElement('div');
-          item.className = 'flex justify-between items-center p-3 rounded-xl bg-slate-900/90 border border-white/10';
-          item.innerHTML = `
-            <div class="flex items-center gap-3">
-              <span class="text-[10px] px-2 py-0.5 rounded font-bold ${isIncome ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'}">
-                ${isIncome ? 'IN' : 'OUT'}
-              </span>
-              <div>
-                <p class="text-xs font-semibold text-slate-100">${tx.desc}</p>
-                <p class="text-[10px] text-slate-400">${tx.date}</p>
-              </div>
-            </div>
-            <span class="text-xs font-bold ${isIncome ? 'text-emerald-400' : 'text-rose-400'}">
-              ${isIncome ? '+' : '-'} ${formatRupiah(tx.amount)}
-            </span>
-          `;
-          listContainer.appendChild(item);
-        });
-      }
-
-      document.getElementById('detailPosIn').innerText = formatRupiah(posIn);
-      document.getElementById('detailPosOut').innerText = formatRupiah(posOut);
-
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-    }
-
-    function closeDetailModal() {
-      const modal = document.getElementById('detailModal');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
     }
 
     function updateChart(belanja, tabungan, saham) {
@@ -396,12 +335,12 @@
     }
 
     function clearAllData() {
-  if (confirm('Hapus seluruh catatan?')) {
-    transactions = [];
-    localStorage.setItem('dompetku_data', JSON.stringify([])); // Simpan array kosong
-    renderUI();
-  }
-}
+      if (confirm('Hapus seluruh catatan?')) {
+        transactions = [];
+        localStorage.setItem('dompetku_data', JSON.stringify([]));
+        renderUI();
+      }
+    }
 
     renderUI();
   </script>
