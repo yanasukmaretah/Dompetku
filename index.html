@@ -61,9 +61,8 @@
       </div>
     </div>
 
-    <!-- Ringkasan Alokasi Pos Utama (Klik untuk memfilter daftar transaksi) -->
+    <!-- Ringkasan Alokasi Pos Utama -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-      <!-- Card Belanja -->
       <div onclick="setFilter('belanja')" class="glass-card-dark p-5 rounded-2xl border-l-4 border-l-blue-400 shadow-lg cursor-pointer hover:bg-slate-800/80 transition transform hover:-translate-y-1">
         <div class="flex justify-between items-center text-slate-400 mb-1">
           <span class="text-xs font-semibold uppercase tracking-wider">Belanja & Dapur</span>
@@ -73,7 +72,6 @@
         <p class="text-[11px] text-amber-300 mt-2 font-medium flex items-center gap-1">Tampilkan Rincian Pos ➔</p>
       </div>
 
-      <!-- Card Tabungan -->
       <div onclick="setFilter('tabungan')" class="glass-card-dark p-5 rounded-2xl border-l-4 border-l-emerald-400 shadow-lg cursor-pointer hover:bg-slate-800/80 transition transform hover:-translate-y-1">
         <div class="flex justify-between items-center text-slate-400 mb-1">
           <span class="text-xs font-semibold uppercase tracking-wider">Tabungan</span>
@@ -83,7 +81,6 @@
         <p class="text-[11px] text-amber-300 mt-2 font-medium flex items-center gap-1">Tampilkan Rincian Pos ➔</p>
       </div>
 
-      <!-- Card Saham -->
       <div onclick="setFilter('saham')" class="glass-card-dark p-5 rounded-2xl border-l-4 border-l-amber-400 shadow-lg cursor-pointer hover:bg-slate-800/80 transition transform hover:-translate-y-1">
         <div class="flex justify-between items-center text-slate-400 mb-1">
           <span class="text-xs font-semibold uppercase tracking-wider">Investasi</span>
@@ -115,7 +112,7 @@
               <span>Semua</span> &times;
             </button>
           </div>
-          <button onclick="clearAllData()" class="text-xs text-rose-400 hover:text-rose-300 transition">Hapus Semua</button>
+          <button onclick="openConfirmModal()" class="text-xs text-rose-400 hover:text-rose-300 transition">Hapus Semua</button>
         </div>
         <div class="space-y-3 max-h-[280px] overflow-y-auto pr-1" id="transactionList">
           <!-- Item transaksi dimuat dinamis -->
@@ -124,7 +121,23 @@
     </div>
   </div>
 
-  <!-- MODAL POP-UP: Input Transaksi Baru -->
+  <!-- MODAL CUSTOM 1: Konfirmasi Hapus Data -->
+  <div id="confirmModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden justify-center items-center p-4 z-50">
+    <div class="glass-card-dark w-full max-w-sm p-6 rounded-3xl border border-rose-500/30 shadow-2xl text-center relative">
+      <div class="w-12 h-12 bg-rose-500/20 text-rose-400 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-rose-500/30">
+        <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+      </div>
+      <h3 class="text-lg font-bold text-slate-100 mb-1">Hapus Seluruh Data?</h3>
+      <p class="text-xs text-slate-400 mb-6">Semua catatan transaksi akan dihapus secara permanen dan tidak bisa dikembalikan.</p>
+      
+      <div class="flex gap-3">
+        <button onclick="closeConfirmModal()" class="w-1/2 py-2.5 rounded-xl border border-slate-700 text-slate-300 font-semibold text-sm hover:bg-slate-800/80 transition">Batal</button>
+        <button onclick="confirmClearAllData()" class="w-1/2 py-2.5 rounded-xl bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white font-bold text-sm shadow-lg transition">Hapus</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CUSTOM 2: Input Transaksi Baru -->
   <div id="transactionModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden justify-center items-center p-4 z-50">
     <div class="glass-card-dark w-full max-w-md p-6 rounded-3xl border border-amber-500/20 shadow-2xl relative">
       <div class="flex justify-between items-center mb-5 pb-3 border-b border-white/10">
@@ -154,7 +167,7 @@
 
         <div>
           <label class="block text-xs font-semibold text-purple-200 mb-1">Detail</label>
-          <input type="text" id="description" required placeholder="misal: Uang Harian / Belanja Sayur / Beli Saham" class="w-full bg-slate-900/90 border border-purple-500/30 rounded-xl p-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-400 transition">
+          <input type="text" id="description" required placeholder="misal: Belanja Sayur / Nabung / Beli QQQ" class="w-full bg-slate-900/90 border border-purple-500/30 rounded-xl p-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-400 transition">
         </div>
 
         <div>
@@ -177,7 +190,7 @@
 
   <script>
     let transactions = JSON.parse(localStorage.getItem('dompetku_data')) || [];
-    let currentFilter = 'all'; // Status filter aktif
+    let currentFilter = 'all';
     let myChart = null;
 
     lucide.createIcons();
@@ -201,7 +214,6 @@
       let totalBelanja = 0, totalTabungan = 0, totalSaham = 0;
       let totalIn = 0, totalOut = 0;
 
-      // Hitung akumulasi angka banner
       transactions.forEach(tx => {
         const isIncome = tx.type === 'in';
         const amt = Number(tx.amount);
@@ -214,12 +226,10 @@
         if (tx.category === 'saham') totalSaham += isIncome ? amt : -amt;
       });
 
-      // Filter daftar transaksi berdasarkan kartu yang diklik
       const filteredTransactions = currentFilter === 'all' 
         ? transactions 
         : transactions.filter(t => t.category === currentFilter);
 
-      // Pembaruan Judul & Tombol Reset
       if (currentFilter === 'all') {
         resetBtn.classList.add('hidden');
         headerTitle.innerHTML = `<i data-lucide="list" class="w-4 h-4 text-pink-400"></i> Semua Transaksi Terakhir`;
@@ -230,7 +240,6 @@
       }
       lucide.createIcons();
 
-      // Render daftar item
       if (filteredTransactions.length === 0) {
         listEl.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">Belum ada catatan ${currentFilter === 'all' ? 'transaksi' : 'di pos ini'}.</p>`;
       } else {
@@ -268,7 +277,6 @@
         });
       }
 
-      // Update Angka Banner
       document.getElementById('totalSaldo').innerText = formatRupiah(totalIn - totalOut);
       document.getElementById('totalIn').innerText = formatRupiah(totalIn);
       document.getElementById('totalOut').innerText = formatRupiah(totalOut);
@@ -312,6 +320,24 @@
       document.getElementById('transactionModal').classList.remove('flex');
     }
 
+    /* Fungsi Modal Konfirmasi Hapus Custom */
+    function openConfirmModal() {
+      document.getElementById('confirmModal').classList.remove('hidden');
+      document.getElementById('confirmModal').classList.add('flex');
+    }
+
+    function closeConfirmModal() {
+      document.getElementById('confirmModal').classList.add('hidden');
+      document.getElementById('confirmModal').classList.remove('flex');
+    }
+
+    function confirmClearAllData() {
+      transactions = [];
+      localStorage.setItem('dompetku_data', JSON.stringify([]));
+      renderUI();
+      closeConfirmModal();
+    }
+
     function handleFormSubmit(e) {
       e.preventDefault();
       const type = document.getElementById('txType').value;
@@ -332,14 +358,6 @@
       transactions = transactions.filter(t => t.id !== id);
       localStorage.setItem('dompetku_data', JSON.stringify(transactions));
       renderUI();
-    }
-
-    function clearAllData() {
-      if (confirm('Hapus seluruh catatan?')) {
-        transactions = [];
-        localStorage.setItem('dompetku_data', JSON.stringify([]));
-        renderUI();
-      }
     }
 
     renderUI();
