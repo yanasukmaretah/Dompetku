@@ -112,7 +112,7 @@
               <span>Semua</span> &times;
             </button>
           </div>
-          <button onclick="openConfirmModal()" class="text-xs text-rose-400 hover:text-rose-300 transition">Hapus Semua</button>
+          <button onclick="openConfirmModal('all')" class="text-xs text-rose-400 hover:text-rose-300 transition">Hapus Semua</button>
         </div>
         <div class="space-y-3 max-h-[280px] overflow-y-auto pr-1" id="transactionList">
           <!-- Item transaksi dimuat dinamis -->
@@ -121,18 +121,18 @@
     </div>
   </div>
 
-  <!-- MODAL CUSTOM 1: Konfirmasi Hapus Data -->
+  <!-- MODAL CUSTOM 1: Konfirmasi Hapus Data (Semua atau Per Item) -->
   <div id="confirmModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden justify-center items-center p-4 z-50">
     <div class="glass-card-dark w-full max-w-sm p-6 rounded-3xl border border-rose-500/30 shadow-2xl text-center relative">
       <div class="w-12 h-12 bg-rose-500/20 text-rose-400 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-rose-500/30">
         <i data-lucide="alert-triangle" class="w-6 h-6"></i>
       </div>
-      <h3 class="text-lg font-bold text-slate-100 mb-1">Hapus Seluruh Data?</h3>
-      <p class="text-xs text-slate-400 mb-6">Semua catatan transaksi akan dihapus secara permanen dan tidak bisa dikembalikan.</p>
+      <h3 id="confirmModalTitle" class="text-lg font-bold text-slate-100 mb-1">Hapus Catatan?</h3>
+      <p id="confirmModalDesc" class="text-xs text-slate-400 mb-6">Data yang dihapus tidak dapat dikembalikan.</p>
       
       <div class="flex gap-3">
         <button onclick="closeConfirmModal()" class="w-1/2 py-2.5 rounded-xl border border-slate-700 text-slate-300 font-semibold text-sm hover:bg-slate-800/80 transition">Batal</button>
-        <button onclick="confirmClearAllData()" class="w-1/2 py-2.5 rounded-xl bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white font-bold text-sm shadow-lg transition">Hapus</button>
+        <button onclick="executeDelete()" class="w-1/2 py-2.5 rounded-xl bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white font-bold text-sm shadow-lg transition">Hapus</button>
       </div>
     </div>
   </div>
@@ -167,7 +167,7 @@
 
         <div>
           <label class="block text-xs font-semibold text-purple-200 mb-1">Detail</label>
-          <input type="text" id="description" required placeholder="misal: Belanja Sayur / Nabung / Beli QQQ" class="w-full bg-slate-900/90 border border-purple-500/30 rounded-xl p-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-400 transition">
+          <input type="text" id="description" required placeholder="misal: Uang Harian / Belanja Sayur / Beli Saham" class="w-full bg-slate-900/90 border border-purple-500/30 rounded-xl p-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-400 transition">
         </div>
 
         <div>
@@ -192,6 +192,7 @@
     let transactions = JSON.parse(localStorage.getItem('dompetku_data')) || [];
     let currentFilter = 'all';
     let myChart = null;
+    let deleteTargetId = null;
 
     lucide.createIcons();
     document.getElementById('txDate').valueAsDate = new Date();
@@ -270,7 +271,7 @@
               <span class="text-xs font-bold ${isIncome ? 'text-emerald-400' : 'text-slate-100'}">
                 ${isIncome ? '+' : '-'} ${formatRupiah(tx.amount)}
               </span>
-              <button onclick="deleteTx(${tx.id})" class="text-slate-500 hover:text-rose-400 text-xs transition">&times;</button>
+              <button onclick="openConfirmModal(${tx.id})" class="text-slate-500 hover:text-rose-400 text-xs transition p-1">&times;</button>
             </div>
           `;
           listEl.appendChild(item);
@@ -320,8 +321,20 @@
       document.getElementById('transactionModal').classList.remove('flex');
     }
 
-    /* Fungsi Modal Konfirmasi Hapus Custom */
-    function openConfirmModal() {
+    /* Penanganan Modal Konfirmasi Custom Terpadu */
+    function openConfirmModal(target) {
+      deleteTargetId = target;
+      const titleEl = document.getElementById('confirmModalTitle');
+      const descEl = document.getElementById('confirmModalDesc');
+
+      if (target === 'all') {
+        titleEl.innerText = 'Hapus Seluruh Data?';
+        descEl.innerText = 'Semua catatan transaksi akan dihapus secara permanen.';
+      } else {
+        titleEl.innerText = 'Hapus Transaksi Ini?';
+        descEl.innerText = 'Catatan transaksi ini akan dihapus permanen.';
+      }
+
       document.getElementById('confirmModal').classList.remove('hidden');
       document.getElementById('confirmModal').classList.add('flex');
     }
@@ -329,11 +342,16 @@
     function closeConfirmModal() {
       document.getElementById('confirmModal').classList.add('hidden');
       document.getElementById('confirmModal').classList.remove('flex');
+      deleteTargetId = null;
     }
 
-    function confirmClearAllData() {
-      transactions = [];
-      localStorage.setItem('dompetku_data', JSON.stringify([]));
+    function executeDelete() {
+      if (deleteTargetId === 'all') {
+        transactions = [];
+      } else if (deleteTargetId !== null) {
+        transactions = transactions.filter(t => t.id !== deleteTargetId);
+      }
+      localStorage.setItem('dompetku_data', JSON.stringify(transactions));
       renderUI();
       closeConfirmModal();
     }
@@ -352,12 +370,6 @@
       closeInputModal();
       document.getElementById('financeForm').reset();
       document.getElementById('txDate').valueAsDate = new Date();
-    }
-
-    function deleteTx(id) {
-      transactions = transactions.filter(t => t.id !== id);
-      localStorage.setItem('dompetku_data', JSON.stringify(transactions));
-      renderUI();
     }
 
     renderUI();
