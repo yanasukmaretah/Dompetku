@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Judul yang muncul di Tab Browser -->
   <title>DompetKu - Aplikasi Keuangan Emak🌻</title>
   
   <!-- Tailwind CSS CDN -->
@@ -32,12 +31,11 @@
 <body class="bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900 min-h-screen text-slate-100 font-sans pb-12">
 
   <div class="max-w-4xl mx-auto p-4 md:p-6">
-    <!-- Header Banner Utama dengan Judul Aplikasi -->
+    <!-- Header Banner Utama -->
     <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center glass-card p-5 rounded-3xl shadow-2xl mb-6 gap-4">
       <div class="flex items-center gap-3">
         <i data-lucide="wallet" class="w-8 h-8 text-amber-400"></i>
         <div>
-          <!-- Judul Utama yang Tampil di Dalam Aplikasi -->
           <h1 class="text-2xl font-black bg-gradient-to-r from-amber-200 via-pink-300 to-purple-300 bg-clip-text text-transparent leading-tight flex items-center gap-2">
             DompetKu - Aplikasi Keuangan Emak🌻
           </h1>
@@ -81,7 +79,6 @@
 
     <!-- Layout Visual & Riwayat Transaksi -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-      <!-- Area Chart dengan Keterangan Label yang Selalu Muncul (Permanen) -->
       <div class="glass-card-dark p-5 rounded-2xl md:col-span-1 flex flex-col justify-between items-center">
         <h4 class="text-sm font-semibold text-slate-300 mb-2 self-start flex items-center gap-2">
           <i data-lucide="pie-chart" class="w-4 h-4 text-purple-400"></i> Rasio Total Pos
@@ -91,7 +88,6 @@
           <canvas id="allocationChart"></canvas>
         </div>
 
-        <!-- Label Permanen di Bawah Grafik -->
         <div class="w-full grid grid-cols-3 gap-1 pt-3 border-t border-white/10 text-center">
           <div class="flex flex-col items-center">
             <div class="flex items-center gap-1">
@@ -129,7 +125,10 @@
               <span>Semua</span> &times;
             </button>
           </div>
-          <button onclick="openConfirmModal('all')" class="text-xs text-rose-400 hover:text-rose-300 transition">Hapus Semua</button>
+          <div class="flex gap-3 text-xs">
+            <button onclick="clearHistoryOnly()" class="text-amber-400 hover:text-amber-300 transition">Bersihkan Tampilan</button>
+            <button onclick="openConfirmModal('all')" class="text-rose-400 hover:text-rose-300 transition">Hapus Semua</button>
+          </div>
         </div>
         <div class="space-y-3 max-h-[280px] overflow-y-auto pr-1" id="transactionList">
           <!-- Item transaksi dimuat dinamis -->
@@ -154,17 +153,18 @@
     </div>
   </div>
 
-  <!-- MODAL CUSTOM 2: Input Transaksi Baru -->
+  <!-- MODAL CUSTOM 2: Form Input / Edit Transaksi -->
   <div id="transactionModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden justify-center items-center p-4 z-50">
     <div class="glass-card-dark w-full max-w-md p-6 rounded-3xl border border-amber-500/20 shadow-2xl relative">
       <div class="flex justify-between items-center mb-5 pb-3 border-b border-white/10">
-        <h3 class="text-lg font-bold bg-gradient-to-r from-amber-200 to-pink-300 bg-clip-text text-transparent flex items-center gap-2">
+        <h3 id="modalFormTitle" class="text-lg font-bold bg-gradient-to-r from-amber-200 to-pink-300 bg-clip-text text-transparent flex items-center gap-2">
           <i data-lucide="edit-3" class="w-5 h-5 text-amber-400"></i> Catat Keuangan Baru
         </h3>
         <button onclick="closeInputModal()" class="w-8 h-8 rounded-full bg-slate-800/80 text-slate-400 hover:text-amber-300 flex items-center justify-center transition">&times;</button>
       </div>
 
       <form id="financeForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
+        <input type="hidden" id="editTxId" value="">
         <div>
           <label class="block text-xs font-semibold text-purple-200 mb-1">Jenis Transaksi Pos</label>
           <select id="txType" class="w-full bg-slate-900/90 border border-purple-500/30 rounded-xl p-2.5 text-sm text-slate-100 focus:outline-none focus:border-amber-400 transition">
@@ -207,6 +207,7 @@
 
   <script>
     let transactions = JSON.parse(localStorage.getItem('dompetku_data')) || [];
+    let carryBalances = JSON.parse(localStorage.getItem('dompetku_carryover')) || { belanja: 0, tabungan: 0, saham: 0 };
     let currentFilter = 'all';
     let myChart = null;
     let deleteTargetId = null;
@@ -233,7 +234,9 @@
       const headerTitle = document.getElementById('listHeaderTitle');
       listEl.innerHTML = '';
 
-      let totalBelanja = 0, totalTabungan = 0, totalSaham = 0;
+      let totalBelanja = carryBalances.belanja || 0;
+      let totalTabungan = carryBalances.tabungan || 0;
+      let totalSaham = carryBalances.saham || 0;
 
       transactions.forEach(tx => {
         const isIncome = tx.type === 'in';
@@ -284,11 +287,12 @@
                 <p class="text-[10px] text-slate-400">${tx.date}</p>
               </div>
             </div>
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2">
               <span class="text-xs font-bold ${isIncome ? 'text-emerald-400' : 'text-slate-100'}">
                 ${isIncome ? '+' : '-'} ${formatRupiah(tx.amount)}
               </span>
-              <button onclick="openConfirmModal(${tx.id})" class="text-slate-500 hover:text-rose-400 text-xs transition p-1">&times;</button>
+              <button onclick="editTransaction(${tx.id})" class="text-slate-400 hover:text-amber-300 text-xs transition p-1" title="Edit Transaksi">✏️</button>
+              <button onclick="openConfirmModal(${tx.id})" class="text-slate-500 hover:text-rose-400 text-xs transition p-1" title="Hapus">&times;</button>
             </div>
           `;
           listEl.appendChild(item);
@@ -347,6 +351,29 @@
     }
 
     function openInputModal() {
+      document.getElementById('editTxId').value = '';
+      document.getElementById('financeForm').reset();
+      document.getElementById('txDate').valueAsDate = new Date();
+      document.getElementById('modalFormTitle').innerHTML = `<i data-lucide="edit-3" class="w-5 h-5 text-amber-400"></i> Catat Keuangan Baru`;
+      lucide.createIcons();
+      document.getElementById('transactionModal').classList.remove('hidden');
+      document.getElementById('transactionModal').classList.add('flex');
+    }
+
+    function editTransaction(id) {
+      const tx = transactions.find(t => t.id === id);
+      if (!tx) return;
+
+      document.getElementById('editTxId').value = tx.id;
+      document.getElementById('txType').value = tx.type;
+      document.getElementById('posCategory').value = tx.category;
+      document.getElementById('description').value = tx.desc;
+      document.getElementById('amount').value = tx.amount;
+      document.getElementById('txDate').value = tx.date;
+
+      document.getElementById('modalFormTitle').innerHTML = `<i data-lucide="edit-3" class="w-5 h-5 text-amber-400"></i> Edit Transaksi`;
+      lucide.createIcons();
+
       document.getElementById('transactionModal').classList.remove('hidden');
       document.getElementById('transactionModal').classList.add('flex');
     }
@@ -356,14 +383,37 @@
       document.getElementById('transactionModal').classList.remove('flex');
     }
 
+    function clearHistoryOnly() {
+      if (confirm("Bersihkan riwayat tampilan tanpa mengubah total saldo saat ini?")) {
+        let currentBelanja = carryBalances.belanja || 0;
+        let currentTabungan = carryBalances.tabungan || 0;
+        let currentSaham = carryBalances.saham || 0;
+
+        transactions.forEach(tx => {
+          const isIncome = tx.type === 'in';
+          const amt = Number(tx.amount);
+          if (tx.category === 'belanja') currentBelanja += isIncome ? amt : -amt;
+          if (tx.category === 'tabungan') currentTabungan += isIncome ? amt : -amt;
+          if (tx.category === 'saham') currentSaham += isIncome ? amt : -amt;
+        });
+
+        carryBalances = { belanja: currentBelanja, tabungan: currentTabungan, saham: currentSaham };
+        transactions = [];
+
+        localStorage.setItem('dompetku_carryover', JSON.stringify(carryBalances));
+        localStorage.setItem('dompetku_data', JSON.stringify(transactions));
+        renderUI();
+      }
+    }
+
     function openConfirmModal(target) {
       deleteTargetId = target;
       const titleEl = document.getElementById('confirmModalTitle');
       const descEl = document.getElementById('confirmModalDesc');
 
       if (target === 'all') {
-        titleEl.innerText = 'Hapus Seluruh Data?';
-        descEl.innerText = 'Semua catatan transaksi akan dihapus secara permanen.';
+        titleEl.innerText = 'Hapus Seluruh Data & Saldo?';
+        descEl.innerText = 'Semua catatan dan total saldo akan direset ke Rp 0.';
       } else {
         titleEl.innerText = 'Hapus Transaksi Ini?';
         descEl.innerText = 'Catatan transaksi ini akan dihapus permanen.';
@@ -382,6 +432,8 @@
     function executeDelete() {
       if (deleteTargetId === 'all') {
         transactions = [];
+        carryBalances = { belanja: 0, tabungan: 0, saham: 0 };
+        localStorage.removeItem('dompetku_carryover');
       } else if (deleteTargetId !== null) {
         transactions = transactions.filter(t => t.id !== deleteTargetId);
       }
@@ -392,13 +444,22 @@
 
     function handleFormSubmit(e) {
       e.preventDefault();
+      const editId = document.getElementById('editTxId').value;
       const type = document.getElementById('txType').value;
       const category = document.getElementById('posCategory').value;
       const desc = document.getElementById('description').value;
-      const amount = document.getElementById('amount').value;
+      const amount = Number(document.getElementById('amount').value);
       const date = document.getElementById('txDate').value;
 
-      transactions.unshift({ id: Date.now(), type, category, desc, amount: Number(amount), date });
+      if (editId) {
+        const index = transactions.findIndex(t => t.id === Number(editId));
+        if (index !== -1) {
+          transactions[index] = { id: Number(editId), type, category, desc, amount, date };
+        }
+      } else {
+        transactions.unshift({ id: Date.now(), type, category, desc, amount, date });
+      }
+
       localStorage.setItem('dompetku_data', JSON.stringify(transactions));
       renderUI();
       closeInputModal();
