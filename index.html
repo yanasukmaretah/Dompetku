@@ -2,8 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <!-- Kunci tampilan ke lebar desktop (1024px) agar di HP tampilannya persis seperti di komputer -->
-  <meta name="viewport" content="width=1024, initial-scale=0.75, maximum-scale=3.0, user-scalable=yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DompetKu - Aplikasi Keuangan Emak</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -12,9 +11,6 @@
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    body {
-      min-width: 1024px; /* Memastikan lebar halaman minimal setara layar desktop */
-    }
     .glass-card {
       background: rgba(255, 255, 255, 0.15);
       backdrop-filter: blur(16px);
@@ -31,42 +27,24 @@
 </head>
 <body class="bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900 min-h-screen text-slate-100 font-sans pb-12">
 
-  <!-- Container Utama dengan Ukuran Desktop Kunci (1024px) -->
-  <div class="w-[1000px] mx-auto p-6">
-    
-    <!-- Header Banner Desktop -->
-    <header class="flex justify-between items-center glass-card p-5 rounded-3xl shadow-2xl mb-6">
-      <div class="flex items-center gap-2">
-        <i data-lucide="wallet" class="w-7 h-7 text-amber-400"></i>
-        <h1 class="text-2xl font-black bg-gradient-to-r from-amber-200 via-pink-300 to-purple-300 bg-clip-text text-transparent">
-          DompetKu
-        </h1>
+  <!-- Header Banner -->
+  <div class="max-w-4xl mx-auto p-4 md:p-6">
+    <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center glass-card p-5 rounded-3xl shadow-2xl mb-6 gap-4">
+      <div>
+        <div class="flex items-center gap-2">
+          <i data-lucide="wallet" class="w-7 h-7 text-amber-400"></i>
+          <h1 class="text-2xl font-black bg-gradient-to-r from-amber-200 via-pink-300 to-purple-300 bg-clip-text text-transparent">
+            DompetKu
+          </h1>
+        </div>
       </div>
-      <button onclick="openInputModal()" class="bg-gradient-to-r from-amber-400 to-pink-500 hover:from-amber-500 hover:to-pink-600 text-slate-950 font-bold text-sm px-5 py-2.5 rounded-2xl shadow-lg transition flex items-center gap-2">
+      <button onclick="openInputModal()" class="w-full sm:w-auto bg-gradient-to-r from-amber-400 to-pink-500 hover:from-amber-500 hover:to-pink-600 text-slate-950 font-bold text-sm px-5 py-2.5 rounded-2xl shadow-lg transition flex items-center justify-center gap-2">
         <i data-lucide="plus-circle" class="w-4 h-4"></i> Catat Transaksi
       </button>
     </header>
 
-    <!-- Total Sisa Saldo / Cashflow Banner Desktop -->
-    <div class="glass-card-dark p-5 rounded-2xl mb-6 flex justify-between items-center border border-amber-500/30">
-      <div>
-        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Sisa Saldo Kas Utama</span>
-        <h2 id="totalSaldo" class="text-3xl font-black text-amber-300 mt-1">Rp 0</h2>
-      </div>
-      <div class="flex gap-4 text-xs">
-        <div class="bg-emerald-500/10 border border-emerald-500/20 px-3 py-2 rounded-xl">
-          <span class="text-slate-400 block">Total In</span>
-          <span id="totalIn" class="font-bold text-emerald-400">Rp 0</span>
-        </div>
-        <div class="bg-rose-500/10 border border-rose-500/20 px-3 py-2 rounded-xl">
-          <span class="text-slate-400 block">Total Out</span>
-          <span id="totalOut" class="font-bold text-rose-400">Rp 0</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Ringkasan Alokasi Pos Utama: 3 Kolom Berdampingan -->
-    <div class="grid grid-cols-3 gap-4 mb-6">
+    <!-- Ringkasan Alokasi Pos Utama (Tiap pos berdiri sendiri secara independen) -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
       <div onclick="setFilter('belanja')" class="glass-card-dark p-5 rounded-2xl border-l-4 border-l-blue-400 shadow-lg cursor-pointer hover:bg-slate-800/80 transition transform hover:-translate-y-1">
         <div class="flex justify-between items-center text-slate-400 mb-1">
           <span class="text-xs font-semibold uppercase tracking-wider">Belanja & Dapur</span>
@@ -95,19 +73,19 @@
       </div>
     </div>
 
-    <!-- Layout Grafik & Riwayat Transaksi Berdampingan (1:2) -->
-    <div class="grid grid-cols-3 gap-6 mb-6">
-      <div class="glass-card-dark p-5 rounded-2xl col-span-1 flex flex-col justify-center items-center">
+    <!-- Layout Visual & Riwayat Transaksi -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+      <div class="glass-card-dark p-5 rounded-2xl md:col-span-1 flex flex-col justify-center items-center">
         <h4 class="text-sm font-semibold text-slate-300 mb-4 self-start flex items-center gap-2">
-          <i data-lucide="pie-chart" class="w-4 h-4 text-purple-400"></i> Rasio Pengeluaran
+          <i data-lucide="pie-chart" class="w-4 h-4 text-purple-400"></i> Rasio Total Pos
         </h4>
         <div class="w-full max-w-[200px]">
           <canvas id="allocationChart"></canvas>
         </div>
       </div>
 
-      <div class="glass-card-dark p-5 rounded-2xl col-span-2">
-        <div class="flex justify-between items-center mb-4 gap-2">
+      <div class="glass-card-dark p-5 rounded-2xl md:col-span-2">
+        <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
           <div class="flex items-center gap-2">
             <h4 id="listHeaderTitle" class="text-sm font-semibold text-slate-300 flex items-center gap-2">
               <i data-lucide="list" class="w-4 h-4 text-pink-400"></i> Semua Transaksi Terakhir
@@ -125,7 +103,7 @@
     </div>
   </div>
 
-  <!-- MODAL CUSTOM 1: Konfirmasi Hapus Data (Semua atau Per Item) -->
+  <!-- MODAL CUSTOM 1: Konfirmasi Hapus Data -->
   <div id="confirmModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden justify-center items-center p-4 z-50">
     <div class="glass-card-dark w-full max-w-sm p-6 rounded-3xl border border-rose-500/30 shadow-2xl text-center relative">
       <div class="w-12 h-12 bg-rose-500/20 text-rose-400 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-rose-500/30">
@@ -153,15 +131,15 @@
 
       <form id="financeForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
         <div>
-          <label class="block text-xs font-semibold text-purple-200 mb-1">Jenis Transaksi</label>
+          <label class="block text-xs font-semibold text-purple-200 mb-1">Jenis Transaksi Pos</label>
           <select id="txType" class="w-full bg-slate-900/90 border border-purple-500/30 rounded-xl p-2.5 text-sm text-slate-100 focus:outline-none focus:border-amber-400 transition">
-            <option value="in" class="bg-slate-900 text-emerald-400">🟢 Pemasukan</option>
-            <option value="out" class="bg-slate-900 text-rose-400">🔴 Pengeluaran</option>
+            <option value="in" class="bg-slate-900 text-emerald-400">🟢 Tambah Saldo Pos (+)</option>
+            <option value="out" class="bg-slate-900 text-rose-400">🔴 Pakai / Kurangi Saldo Pos (-)</option>
           </select>
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-purple-200 mb-1">Pos Keuangan</label>
+          <label class="block text-xs font-semibold text-purple-200 mb-1">Pilih Pos Keuangan</label>
           <select id="posCategory" class="w-full bg-slate-900/90 border border-purple-500/30 rounded-xl p-2.5 text-sm text-slate-100 focus:outline-none focus:border-amber-400 transition">
             <option value="belanja" class="bg-slate-900">🛒 Belanja & Kebutuhan Dapur</option>
             <option value="tabungan" class="bg-slate-900">🐖 Tabungan</option>
@@ -170,8 +148,8 @@
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-purple-200 mb-1">Detail</label>
-          <input type="text" id="description" required placeholder="misal: Uang Harian / Belanja Sayur / Beli Saham" class="w-full bg-slate-900/90 border border-purple-500/30 rounded-xl p-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-400 transition">
+          <label class="block text-xs font-semibold text-purple-200 mb-1">Detail Keterangan</label>
+          <input type="text" id="description" required placeholder="misal: Jatah Uang Harian / Belanja Sayur / Beli Saham" class="w-full bg-slate-900/90 border border-purple-500/30 rounded-xl p-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-400 transition">
         </div>
 
         <div>
@@ -217,14 +195,10 @@
       listEl.innerHTML = '';
 
       let totalBelanja = 0, totalTabungan = 0, totalSaham = 0;
-      let totalIn = 0, totalOut = 0;
 
       transactions.forEach(tx => {
         const isIncome = tx.type === 'in';
         const amt = Number(tx.amount);
-
-        if (isIncome) totalIn += amt;
-        else totalOut += amt;
 
         if (tx.category === 'belanja') totalBelanja += isIncome ? amt : -amt;
         if (tx.category === 'tabungan') totalTabungan += isIncome ? amt : -amt;
@@ -252,8 +226,8 @@
           const isIncome = tx.type === 'in';
 
           let typeBadge = isIncome 
-            ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30">IN</span>' 
-            : '<span class="text-[10px] px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 font-bold border border-rose-500/30">OUT</span>';
+            ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30">+ IN</span>' 
+            : '<span class="text-[10px] px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 font-bold border border-rose-500/30">- OUT</span>';
 
           let badgeColor = 'bg-blue-500/20 text-blue-300 border-blue-500/30';
           let catLabel = 'Belanja';
@@ -281,10 +255,6 @@
           listEl.appendChild(item);
         });
       }
-
-      document.getElementById('totalSaldo').innerText = formatRupiah(totalIn - totalOut);
-      document.getElementById('totalIn').innerText = formatRupiah(totalIn);
-      document.getElementById('totalOut').innerText = formatRupiah(totalOut);
 
       document.getElementById('totalBelanja').innerText = formatRupiah(totalBelanja);
       document.getElementById('totalTabungan').innerText = formatRupiah(totalTabungan);
