@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DompetKu - Financial Tracker</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .glass-card {
+      background: rgba(255, 255, 255, 0.25);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900 min-h-screen text-white font-sans p-4 md:p-8">
+
+  <div class="max-w-4xl mx-auto space-y-6">
+    <!-- Header -->
+    <header class="flex justify-between items-center glass-card p-6 rounded-3xl shadow-xl">
+      <div>
+        <h1 class="text-2xl font-bold bg-gradient-to-r from-amber-200 to-pink-300 bg-clip-text text-transparent">
+          Dompet Rumah Tangga
+        </h1>
+        <p class="text-xs text-slate-300">Pantau Belanja, Tabungan & Saham</p>
+      </div>
+      <button class="bg-amber-400/20 hover:bg-amber-400/30 text-amber-200 border border-amber-300/40 text-sm px-4 py-2 rounded-xl transition">
+        + Catat Transaksi
+      </button>
+    </header>
+
+    <!-- Ringkasan Saldo / Pos -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <!-- Pos Belanja -->
+      <div class="glass-card p-5 rounded-2xl border-l-4 border-l-blue-400">
+        <p class="text-xs text-slate-300">Belanja & Kebutuhan</p>
+        <h3 class="text-xl font-bold mt-1 text-blue-200">Rp 2.500.000</h3>
+        <p class="text-[10px] text-blue-300 mt-2">Batas Anggaran: Rp 3.000.000</p>
+      </div>
+
+      <!-- Pos Tabungan -->
+      <div class="glass-card p-5 rounded-2xl border-l-4 border-l-emerald-400">
+        <p class="text-xs text-slate-300">Tabungan & Dana Darurat</p>
+        <h3 class="text-xl font-bold mt-1 text-emerald-200">Rp 1.000.000</h3>
+        <p class="text-[10px] text-emerald-300 mt-2">Target Bulanan: Terpenuhi</p>
+      </div>
+
+      <!-- Pos Saham -->
+      <div class="glass-card p-5 rounded-2xl border-l-4 border-l-amber-400">
+        <p class="text-xs text-slate-300">Investasi Saham</p>
+        <h3 class="text-xl font-bold mt-1 text-amber-200">Rp 500.000</h3>
+        <p class="text-[10px] text-amber-300 mt-2">Portofolio: BBCA, TLKM</p>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
